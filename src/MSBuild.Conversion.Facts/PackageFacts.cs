@@ -6,6 +6,7 @@
     public static class PackageFacts
     {
         public const string PackagesConfigIncludeName = "packages.config";
+        public const string ProjectJsonIncludeName = "project.json";
         public const string PackageReferenceItemType = "PackageReference";
         public const string PackagesConfigIDName = "id";
         public const string PackagesConfigVersionName = "version";

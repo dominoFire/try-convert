@@ -273,17 +273,29 @@ namespace MSBuild.Abstractions
             !tfm.ContainsIgnoreCase(MSBuildFacts.NetcoreappPrelude)
             && !tfm.ContainsIgnoreCase(MSBuildFacts.NetstandardPrelude);
 
+        public static ProjectItemGroupElement? GetItemGroupWithFact(IProjectRootElement root, string item) =>
+            root.ItemGroups.FirstOrDefault(pige => pige.Items.Any(pe => pe.Include.Equals(item, StringComparison.OrdinalIgnoreCase)));
+
+        public static ProjectItemElement GetItemWithFact(ProjectItemGroupElement packagesConfigItemGroup, string item) =>
+            packagesConfigItemGroup.Items.Single(pe => pe.Include.Equals(item, StringComparison.OrdinalIgnoreCase));
+
         /// <summary>
         /// Finds the item group where a packages.config is included. Assumes only one.
         /// </summary>
         public static ProjectItemGroupElement? GetPackagesConfigItemGroup(IProjectRootElement root) =>
-            root.ItemGroups.FirstOrDefault(pige => pige.Items.Any(pe => pe.Include.Equals(PackageFacts.PackagesConfigIncludeName, StringComparison.OrdinalIgnoreCase)));
+            GetItemGroupWithFact(root, PackageFacts.PackagesConfigIncludeName);
 
         /// <summary>
         /// Finds the packages.config item in its containing item group.
         /// </summary>
         public static ProjectItemElement GetPackagesConfigItem(ProjectItemGroupElement packagesConfigItemGroup) =>
-            packagesConfigItemGroup.Items.Single(pe => pe.Include.Equals(PackageFacts.PackagesConfigIncludeName, StringComparison.OrdinalIgnoreCase));
+            GetItemWithFact(packagesConfigItemGroup, PackageFacts.PackagesConfigIncludeName);
+
+        public static ProjectItemGroupElement? GetProjectJsonItemGroup(IProjectRootElement root) =>
+            GetItemGroupWithFact(root, PackageFacts.ProjectJsonIncludeName);
+
+        public static ProjectItemElement GetProjectJsonItem(ProjectItemGroupElement packagesConfigItemGroup) =>
+            GetItemWithFact(packagesConfigItemGroup, PackageFacts.ProjectJsonIncludeName);
 
         /// <summary>
         /// Adds the UseWindowsForms=True property to the top-level project property group.

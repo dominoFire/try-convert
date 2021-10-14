@@ -50,6 +50,11 @@
         /// </summary>
         public bool DevelopmentDependency { get; set; } = false;
 
+        public PackageReferencePackage()
+        {
+
+        }
+
         public PackageReferencePackage(PackagesConfigPackage pcp)
         {
             ID = pcp.ID;

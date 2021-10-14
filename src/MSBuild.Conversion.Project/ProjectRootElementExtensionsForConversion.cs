@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Construction;
@@ -7,6 +8,8 @@ using Microsoft.Build.Construction;
 using MSBuild.Abstractions;
 using MSBuild.Conversion.Facts;
 using MSBuild.Conversion.Package;
+using NuGet.ProjectModel;
+using ProjectStyle = MSBuild.Abstractions.ProjectStyle;
 
 namespace MSBuild.Conversion.Project
 {
@@ -386,10 +389,64 @@ namespace MSBuild.Conversion.Project
             }
 
             var packageReferences = PackagesConfigConverter.Convert(path);
-            if (packageReferences is { } && packageReferences.Any())
+            ProcessPackageReferencePackages(projectRootElement, packageReferences, projectStyle, tfm);
+
+            packagesConfigItemGroup.RemoveChild(packagesConfigItem);
+            if (removePackagesConfig)
+            {
+                File.Delete(path);
+            }
+
+            return projectRootElement;
+        }
+
+        public static IProjectRootElement ConvertProjectJson(this IProjectRootElement projectRootElement, ProjectStyle projectStyle, string tfm, bool deleteProjectJson)
+        {
+            var itemGroup = MSBuildHelpers.GetProjectJsonItemGroup(projectRootElement);
+            if (itemGroup is null)
+            {
+                return projectRootElement;
+            }
+
+            var item = MSBuildHelpers.GetProjectJsonItem(itemGroup);
+            var path = Path.Combine(projectRootElement.DirectoryPath, item.Include);
+            if (!File.Exists(path))
+            {
+                return projectRootElement;
+            }
+
+            // Conversion starts
+            var projectJson = JsonPackageSpecReader.GetPackageSpec("myProject.json", path);
+            if (projectJson is null)
+            {
+                return projectRootElement;
+            }
+
+            // Add Runtime Ids
+            var rids = ProjectJsonConverter.GetRuntimes(projectJson);
+            var prop = projectRootElement.CreatePropertyElement("RuntimeIdentifiers");
+            prop.Value = rids;
+
+            // Add PackageReference's
+            var packageReferences = ProjectJsonConverter.GetProjectJsonPackageReferences(projectJson);
+            ProcessPackageReferencePackages(projectRootElement, packageReferences, projectStyle, tfm);
+
+            // Remove project.json refrence
+            itemGroup.RemoveChild(item);
+            if (deleteProjectJson)
+            {
+                File.Delete(path);
+            }
+
+            return projectRootElement;
+        }
+
+        internal static void ProcessPackageReferencePackages(IProjectRootElement projectRootElement, IEnumerable<PackageReferencePackage> packages, ProjectStyle projectStyle, string tfm)
+        {
+            if (packages is { } && packages.Any())
             {
                 var groupForPackageRefs = projectRootElement.AddItemGroup();
-                foreach (var pkgref in packageReferences)
+                foreach (var pkgref in packages)
                 {
                     if (pkgref.ID == null)
                     {
@@ -427,14 +484,6 @@ namespace MSBuild.Conversion.Project
                     projectRootElement.RemoveChild(groupForPackageRefs);
                 }
             }
-
-            packagesConfigItemGroup.RemoveChild(packagesConfigItem);
-            if (removePackagesConfig)
-            {
-                File.Delete(path);
-            }
-
-            return projectRootElement;
         }
 
         private static void AddPackageReferenceElement(ProjectItemGroupElement packageReferencesItemGroup, string packageName, string? packageVersion)

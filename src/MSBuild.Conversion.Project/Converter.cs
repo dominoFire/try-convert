@@ -39,6 +39,8 @@ namespace MSBuild.Conversion.Project
             return _projectRootElement
                 // Let's convert packages first, since that's what you should do manually anyways
                 .ConvertAndAddPackages(_sdkBaselineProject.ProjectStyle, _sdkBaselineProject.TargetTFM, removePackagesConfig: _noBackup)
+                // Convert project.json file
+                .ConvertProjectJson(_sdkBaselineProject.ProjectStyle, _sdkBaselineProject.TargetTFM, deleteProjectJson: _noBackup)
 
                 // Now we can convert the project over
                 .ChangeImportsAndAddSdkAttribute(_sdkBaselineProject, _forceRemoveCustomImports)

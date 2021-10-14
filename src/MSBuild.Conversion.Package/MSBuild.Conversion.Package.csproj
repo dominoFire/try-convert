@@ -12,4 +12,8 @@
     <InternalsVisibleTo Include="PackageConversion.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NuGet.ProjectModel" Version="$(NuGetProjectModelVersion)" />
+  </ItemGroup>
+
 </Project>
