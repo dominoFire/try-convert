@@ -50,9 +50,12 @@
         /// </summary>
         public bool DevelopmentDependency { get; set; } = false;
 
+        public string? IncludeAssets { get; set; }
+
+        public string? PrivateAssets { get; set; }
+
         public PackageReferencePackage()
         {
-
         }
 
         public PackageReferencePackage(PackagesConfigPackage pcp)

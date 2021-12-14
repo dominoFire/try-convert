@@ -16,5 +16,7 @@
         public const string PackagesConfigDevelopmentDependencyName = "developmentDependency";
         public const string EnsureNuGetPackageBuildImportsName = "EnsureNuGetPackageBuildImports";
         public const string VersionAttribute = "Version";
+        public const string IncludeAssetsAttribute = "IncludeAssets";
+        public const string PrivateAssetsAttribute = "PrivateAssets";
     }
 }

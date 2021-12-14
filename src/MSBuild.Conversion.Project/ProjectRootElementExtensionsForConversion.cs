@@ -469,7 +469,7 @@ namespace MSBuild.Conversion.Project
                         continue;
                     }
 
-                    AddPackageReferenceElement(groupForPackageRefs, pkgref.ID, pkgref.Version);
+                    AddPackageReferenceElement(groupForPackageRefs, pkgref);
                 }
 
                 if (projectStyle == ProjectStyle.MSTest
@@ -490,6 +490,24 @@ namespace MSBuild.Conversion.Project
         {
             var packageReference = packageReferencesItemGroup.AddItem(PackageFacts.PackageReferenceItemType, packageName);
             packageReference.GetXml().SetAttribute(PackageFacts.VersionAttribute, packageVersion);
+        }
+
+        private static void AddPackageReferenceElement(ProjectItemGroupElement packageReferencesItemGroup, PackageReferencePackage pr)
+        {
+            var packageReference = packageReferencesItemGroup.AddItem(PackageFacts.PackageReferenceItemType, pr.ID);
+            var xml = packageReference.GetXml();
+
+            xml.SetAttribute(PackageFacts.VersionAttribute, pr.Version);
+
+            if (!string.IsNullOrEmpty(pr.IncludeAssets))
+            {
+                xml.SetAttribute(PackageFacts.IncludeAssetsAttribute, pr.IncludeAssets);
+            }
+
+            if (!string.IsNullOrEmpty(pr.PrivateAssets))
+            {
+                xml.SetAttribute(PackageFacts.PrivateAssetsAttribute, pr.PrivateAssets);
+            }
         }
 
         public static IProjectRootElement AddDesktopProperties(this IProjectRootElement projectRootElement, BaselineProject baselineProject)

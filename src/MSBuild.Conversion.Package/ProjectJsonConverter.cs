@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Common;
 
 namespace MSBuild.Conversion.Package
 {
@@ -40,15 +41,25 @@ namespace MSBuild.Conversion.Package
             return dependencies;
         }
 
-        public static PackageReferencePackage? FromLibraryDependency(LibraryDependency fxdep)
+        public static PackageReferencePackage? FromLibraryDependency(LibraryDependency libDep)
         {
-            if (fxdep.ReferenceType == LibraryDependencyReferenceType.Direct)
+            if (libDep.ReferenceType == LibraryDependencyReferenceType.Direct)
             {
                 var prp = new PackageReferencePackage
                 {
-                    ID = fxdep.Name,
-                    Version = fxdep.LibraryRange.VersionRange.ToNormalizedString()
+                    ID = libDep.Name,
+                    Version = libDep.LibraryRange.VersionRange.ToNormalizedString(),
                 };
+
+                if (libDep.IncludeType != LibraryIncludeFlags.All)
+                {
+                    prp.IncludeAssets = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libDep.IncludeType));
+                }
+
+                if (libDep.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent)
+                {
+                    prp.PrivateAssets = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libDep.SuppressParent));
+                }
 
                 return prp;
             }
